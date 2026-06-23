@@ -1,6 +1,8 @@
 services:
-  tilearchive:
+  tile-db:
     image: docker.io/mariadb:latest
+#    env_file:
+#      - ./config/secret.env
 #    container_name: tilearchive-container
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
@@ -11,18 +13,18 @@ services:
       - "3306:3306"
     volumes:
       - tile-volume:/var/lib/mysql
-      - ./DatabaseNearFinal.sql:/docker-entrypoint-initdb.d/DatabaseNearFinal.sql
+      - ./glaze_daemon/db-schema.sql:/docker-entrypoint-initdb.d/db-schema.sql
     networks:
-      - ceramnote
+      - glazed
 
-  ceramnote-frontend:
-    build: ./frontend
+  glazer-admin:
+    build: ./glazer_admin
 #    image: localhost/cacticouncil/ceramnote_frontend:latest
 #    container_name: ceramnote-frontend
     ports:
       - "80:80"
     depends_on:
-      - tilearchive
+      - tile-db
     environment:
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
@@ -32,20 +34,20 @@ services:
     volumes:
       - ./data:/data
     networks:
-      - ceramnote
+      - glazed
 
-  backend:
-    build: ./backend
+  glaze-daemon:
+    build: ./glaze_daemon
 #    image: cacticouncil/ceramnote_backend:latest
-    container_name: ceramnote-backend
+    container_name: glaze-daemon
     ports:
       - "8000:8000"
     volumes:
       - ./data:/data
     depends_on:
-      - tilearchive
+      - tile-db
     networks:
-      - ceramnote
+      - glazed
 
 volumes:
   tile-volume:
@@ -53,5 +55,5 @@ volumes:
 
 # Added all of this
 networks:
-  ceramnote:
+  glazed:
     driver: bridge

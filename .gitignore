@@ -1,4 +1,4 @@
-secret.env
+.env
 gh_token.txt
 dataset/test_images/
 .vs/
